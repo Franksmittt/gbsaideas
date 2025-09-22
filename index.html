@@ -12,9 +12,11 @@
     <div class="p-4 sm:p-6">
         <div class="fixed top-2 right-4 bg-gray-900 text-white text-xs p-2 rounded-lg shadow-lg z-50">
             Logged in as: <span id="user-id-display" class="font-mono font-bold capitalize">loading...</span>
-            <a href="login.html" class="ml-2 text-blue-400 hover:text-blue-300">[Switch User]</a>
+            <!-- ✅ UPDATED THIS LINE -->
+            <button id="logout-btn" class="ml-2 text-blue-400 hover:text-blue-300">[Logout]</button>
         </div>
 
+        <!-- The rest of your HTML file remains exactly the same... -->
         <div class="grid grid-rows-5 gap-6">
             <div id="ideas-zone" class="drop-zone bg-gray-800 rounded-lg p-4 flex flex-col overflow-hidden min-h-[26rem]">
                 <h2 class="text-2xl font-bold text-white text-center sm:text-left mb-2 flex-shrink-0">Ideas</h2>
@@ -30,7 +32,8 @@
             <div id="hot-zone" class="bg-purple-900/50 rounded-lg p-4 flex flex-col overflow-hidden min-h-[26rem]"><h2 class="text-2xl font-bold text-purple-300 text-center sm:text-left mb-2 flex-shrink-0">Hottest Ideas (Team Favorites)</h2><div class="card-container flex-grow flex items-center gap-4 overflow-x-auto pb-2 hide-scrollbar"></div></div>
         </div>
     </div>
-
+    
+    <!-- MODALS SECTION REMAINS UNCHANGED -->
     <div id="view-modal" class="modal fixed inset-0 z-50 flex items-center justify-center hidden">
         <div class="modal-backdrop absolute inset-0"></div>
         <div class="bg-gray-800 text-white rounded-lg shadow-xl p-6 w-full max-w-2xl z-10 m-4 flex flex-col max-h-[90vh]">
@@ -42,11 +45,9 @@
                 <img id="modal-image" src="" alt="Idea Image" class="rounded-lg w-full max-h-80 object-cover mb-4">
                 <div id="modal-tags" class="mb-4"></div>
                 <p id="modal-description" class="text-gray-300 mb-6"></p>
-
                 <hr class="border-gray-600 mb-4">
                 <h3 class="text-xl font-bold mb-4">Comments & Recommendations</h3>
-                <div id="comments-list" class="space-y-4 mb-4 max-h-60 overflow-y-auto">
-                    </div>
+                <div id="comments-list" class="space-y-4 mb-4 max-h-60 overflow-y-auto"></div>
                 <form id="comment-form">
                     <textarea id="comment-input" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" rows="3" placeholder="Add your recommendation..." required></textarea>
                     <button type="submit" class="mt-2 w-full text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Post Comment</button>
@@ -54,7 +55,6 @@
             </div>
         </div>
     </div>
-
     <div id="add-modal" class="modal fixed inset-0 z-50 flex items-center justify-center hidden">
         <div class="modal-backdrop absolute inset-0"></div>
         <div class="bg-gray-800 text-white rounded-lg shadow-xl p-6 w-full max-w-lg z-10 m-4 overflow-y-auto max-h-screen">
