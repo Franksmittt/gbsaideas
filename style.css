@@ -1,30 +1,147 @@
-body { 
-    background-color: #000000; 
+:root {
+    --background-deep-space: #111827;
+    --background-surface: #1F2937;
+    --background-subtle: #374151;
+    --border-default: #4B5563;
+    --border-interactive: #3B82F6;
+    --text-primary: #F9FAFB;
+    --text-secondary: #9CA3AF;
+    --text-headline: #FFFFFF;
+    --brand-accent: #3B82F6;
+    --brand-accent-text: #FFFFFF;
+    --brand-accent-hover: #2563EB;
+    --feedback-success: #10B981;
+    --feedback-warning: #F59E0B;
+    --feedback-danger: #EF4444;
+    --font-headline: 'Montserrat', sans-serif;
+    --font-body: 'Roboto', sans-serif;
+    --border-radius-medium: 8px;
+    --border-radius-large: 12px;
+    --global-transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.modal { 
-    transition: opacity 0.25s ease; 
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    background-color: var(--background-deep-space);
+    color: var(--text-primary);
+    font-family: var(--font-body);
 }
 
-.modal-backdrop { 
-    background-color: rgba(0,0,0,0.5); 
+aside {
+    background-color: var(--background-surface);
+    border-right: 1px solid var(--border-default);
 }
 
-.dragging { 
-    opacity: 0.5; 
-    cursor: grabbing; 
+header {
+    background-color: var(--background-surface);
+    border-bottom: 1px solid var(--border-default);
 }
 
-.drag-over { 
-    border-style: solid; 
-    border-color: #fff !important; 
+.font-headline { font-family: var(--font-headline); }
+
+.nav-link {
+    display: block;
+    padding: 12px 18px;
+    border-radius: var(--border-radius-medium);
+    transition: background-color var(--global-transition), color var(--global-transition);
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
-.hide-scrollbar::-webkit-scrollbar { 
-    display: none; 
+.nav-link:hover {
+    background-color: var(--background-subtle);
+    color: var(--text-primary);
 }
 
-.hide-scrollbar { 
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+.nav-link.active {
+    background-color: var(--brand-accent);
+    color: var(--brand-accent-text);
+    font-weight: 700;
 }
+
+.primary-button, .logout-button {
+    background-color: var(--brand-accent);
+    color: var(--brand-accent-text);
+    font-family: var(--font-headline);
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: var(--border-radius-medium);
+    transition: background-color var(--global-transition);
+    border: none;
+    cursor: pointer;
+}
+.primary-button:hover, .logout-button:hover { background-color: var(--brand-accent-hover); }
+
+.secondary-button {
+    background-color: var(--background-subtle);
+    color: var(--text-primary);
+    border: 1px solid var(--border-default);
+    padding: 10px 20px;
+    border-radius: var(--border-radius-medium);
+    transition: background-color var(--global-transition);
+    cursor: pointer;
+}
+.secondary-button:hover { background-color: #4B5563; }
+
+input, textarea, select {
+    background-color: var(--background-deep-space);
+    color: var(--text-primary);
+    border: 1px solid var(--border-default);
+    padding: 12px 16px;
+    border-radius: var(--border-radius-medium);
+    width: 100%;
+}
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--border-interactive);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+}
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(17, 24, 39, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 50;
+}
+
+.module-card {
+    background-color: var(--background-surface);
+    border: 1px solid var(--border-default);
+    border-radius: var(--border-radius-large);
+    padding: 24px;
+}
+
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(17, 24, 39, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+.spinner {
+    width: 56px;
+    height: 56px;
+    border: 6px solid var(--border-default);
+    border-bottom-color: var(--brand-accent);
+    border-radius: 50%;
+    animation: rotation 1s linear infinite;
+}
+@keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+#app-content::-webkit-scrollbar { width: 10px; }
+#app-content::-webkit-scrollbar-track { background: transparent; }
+#app-content::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 5px; border: 2px solid var(--background-deep-space); }
+#app-content::-webkit-scrollbar-thumb:hover { background: var(--brand-accent); }
+.hidden { display: none !important; }
+
+/* Styles from old project */
+.modal { transition: opacity 0.25s ease; }
+.dragging { opacity: 0.5; cursor: grabbing; }
+.drag-over { border-style: solid; border-color: #fff !important; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
