@@ -12,56 +12,21 @@
     <div class="p-4 sm:p-6">
         <div class="fixed top-2 right-4 bg-gray-900 text-white text-xs p-2 rounded-lg shadow-lg z-50">
             Logged in as: <span id="user-id-display" class="font-mono font-bold capitalize">loading...</span>
-            <!-- ✅ UPDATED THIS LINE -->
+            <!-- ✅ This is now a button with an ID for the script to find. -->
             <button id="logout-btn" class="ml-2 text-blue-400 hover:text-blue-300">[Logout]</button>
         </div>
-
-        <!-- The rest of your HTML file remains exactly the same... -->
+        
+        <!-- The rest of your HTML remains unchanged -->
         <div class="grid grid-rows-5 gap-6">
-            <div id="ideas-zone" class="drop-zone bg-gray-800 rounded-lg p-4 flex flex-col overflow-hidden min-h-[26rem]">
-                <h2 class="text-2xl font-bold text-white text-center sm:text-left mb-2 flex-shrink-0">Ideas</h2>
-                <div class="card-container flex-grow flex items-center gap-4 overflow-x-auto pb-2 hide-scrollbar">
-                    <div id="add-new-card" class="bg-gray-700/50 border-2 border-dashed border-gray-500 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-700 transition-colors w-72 h-full flex-shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                    </div>
-                </div>
-            </div>
+            <div id="ideas-zone" class="drop-zone bg-gray-800 rounded-lg p-4 flex flex-col overflow-hidden min-h-[26rem]"><h2 class="text-2xl font-bold text-white text-center sm:text-left mb-2 flex-shrink-0">Ideas</h2><div class="card-container flex-grow flex items-center gap-4 overflow-x-auto pb-2 hide-scrollbar"><div id="add-new-card" class="bg-gray-700/50 border-2 border-dashed border-gray-500 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-700 transition-colors w-72 h-full flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg></div></div></div>
             <div id="yes-zone" class="drop-zone bg-green-900/50 rounded-lg p-4 border-2 border-dashed border-green-500 flex flex-col overflow-hidden min-h-[26rem]"><h2 class="text-2xl font-bold text-green-300 text-center sm:text-left mb-2 flex-shrink-0">My "Yes" Votes</h2><div class="card-container flex-grow flex items-center gap-4 overflow-x-auto pb-2 hide-scrollbar"></div></div>
             <div id="maybe-zone" class="drop-zone bg-yellow-900/50 rounded-lg p-4 border-2 border-dashed border-yellow-500 flex flex-col overflow-hidden min-h-[26rem]"><h2 class="text-2xl font-bold text-yellow-300 text-center sm:text-left mb-2 flex-shrink-0">My "Maybe" Votes</h2><div class="card-container flex-grow flex items-center gap-4 overflow-x-auto pb-2 hide-scrollbar"></div></div>
             <div id="no-zone" class="drop-zone bg-red-900/50 rounded-lg p-4 border-2 border-dashed border-red-500 flex flex-col overflow-hidden min-h-[26rem]"><h2 class="text-2xl font-bold text-red-300 text-center sm:text-left mb-2 flex-shrink-0">My "No" Votes</h2><div class="card-container flex-grow flex items-center gap-4 overflow-x-auto pb-2 hide-scrollbar"></div></div>
             <div id="hot-zone" class="bg-purple-900/50 rounded-lg p-4 flex flex-col overflow-hidden min-h-[26rem]"><h2 class="text-2xl font-bold text-purple-300 text-center sm:text-left mb-2 flex-shrink-0">Hottest Ideas (Team Favorites)</h2><div class="card-container flex-grow flex items-center gap-4 overflow-x-auto pb-2 hide-scrollbar"></div></div>
         </div>
     </div>
-    
-    <!-- MODALS SECTION REMAINS UNCHANGED -->
-    <div id="view-modal" class="modal fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="modal-backdrop absolute inset-0"></div>
-        <div class="bg-gray-800 text-white rounded-lg shadow-xl p-6 w-full max-w-2xl z-10 m-4 flex flex-col max-h-[90vh]">
-            <div class="flex justify-between items-center mb-4 flex-shrink-0">
-                <h2 id="modal-title" class="text-2xl font-bold"></h2>
-                <button id="close-view-modal" class="text-gray-400 hover:text-white text-3xl">&times;</button>
-            </div>
-            <div class="overflow-y-auto pr-2">
-                <img id="modal-image" src="" alt="Idea Image" class="rounded-lg w-full max-h-80 object-cover mb-4">
-                <div id="modal-tags" class="mb-4"></div>
-                <p id="modal-description" class="text-gray-300 mb-6"></p>
-                <hr class="border-gray-600 mb-4">
-                <h3 class="text-xl font-bold mb-4">Comments & Recommendations</h3>
-                <div id="comments-list" class="space-y-4 mb-4 max-h-60 overflow-y-auto"></div>
-                <form id="comment-form">
-                    <textarea id="comment-input" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" rows="3" placeholder="Add your recommendation..." required></textarea>
-                    <button type="submit" class="mt-2 w-full text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Post Comment</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    <div id="add-modal" class="modal fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="modal-backdrop absolute inset-0"></div>
-        <div class="bg-gray-800 text-white rounded-lg shadow-xl p-6 w-full max-w-lg z-10 m-4 overflow-y-auto max-h-screen">
-            <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold">Add a New Idea</h2><button id="close-add-modal" class="text-gray-400 hover:text-white text-3xl">&times;</button></div>
-            <form id="add-idea-form"><div class="mb-4"><label for="title" class="block mb-2 text-sm font-medium">Title</label><input type="text" id="title" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required></div><div class="mb-4"><label for="image-url" class="block mb-2 text-sm font-medium">Image URL</label><input type="url" id="image-url" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="https://placehold.co/..."></div><div class="mb-4"><label for="tags" class="block mb-2 text-sm font-medium">Tags (comma separated)</label><input type="text" id="tags" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"></div><div class="mb-4"><label for="description" class="block mb-2 text-sm font-medium">Description</label><textarea id="description" rows="4" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"></textarea></div><button type="submit" class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Add Idea</button></form>
-        </div>
-    </div>
+    <div id="view-modal" class="modal fixed inset-0 z-50 flex items-center justify-center hidden"><div class="modal-backdrop absolute inset-0"></div><div class="bg-gray-800 text-white rounded-lg shadow-xl p-6 w-full max-w-2xl z-10 m-4 flex flex-col max-h-[90vh]"><div class="flex justify-between items-center mb-4 flex-shrink-0"><h2 id="modal-title" class="text-2xl font-bold"></h2><button id="close-view-modal" class="text-gray-400 hover:text-white text-3xl">&times;</button></div><div class="overflow-y-auto pr-2"><img id="modal-image" src="" alt="Idea Image" class="rounded-lg w-full max-h-80 object-cover mb-4"><div id="modal-tags" class="mb-4"></div><p id="modal-description" class="text-gray-300 mb-6"></p><hr class="border-gray-600 mb-4"><h3 class="text-xl font-bold mb-4">Comments & Recommendations</h3><div id="comments-list" class="space-y-4 mb-4 max-h-60 overflow-y-auto"></div><form id="comment-form"><textarea id="comment-input" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" rows="3" placeholder="Add your recommendation..." required></textarea><button type="submit" class="mt-2 w-full text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Post Comment</button></form></div></div></div>
+    <div id="add-modal" class="modal fixed inset-0 z-50 flex items-center justify-center hidden"><div class="modal-backdrop absolute inset-0"></div><div class="bg-gray-800 text-white rounded-lg shadow-xl p-6 w-full max-w-lg z-10 m-4 overflow-y-auto max-h-screen"><div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold">Add a New Idea</h2><button id="close-add-modal" class="text-gray-400 hover:text-white text-3xl">&times;</button></div><form id="add-idea-form"><div class="mb-4"><label for="title" class="block mb-2 text-sm font-medium">Title</label><input type="text" id="title" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required></div><div class="mb-4"><label for="image-url" class="block mb-2 text-sm font-medium">Image URL</label><input type="url" id="image-url" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="https://placehold.co/..."></div><div class="mb-4"><label for="tags" class="block mb-2 text-sm font-medium">Tags (comma separated)</label><input type="text" id="tags" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"></div><div class="mb-4"><label for="description" class="block mb-2 text-sm font-medium">Description</label><textarea id="description" rows="4" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"></textarea></div><button type="submit" class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Add Idea</button></form></div></div>
 
     <script type="module" src="app.js"></script>
 </body>

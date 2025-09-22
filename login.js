@@ -1,19 +1,6 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-
-// This config needs to match the one in `firebase.js`
-const firebaseConfig = {
-    apiKey: "AIzaSyA7dhSMDcW0i319awDLxWP9oFV5ti4J2fU",
-    authDomain: "gbsaadideas.firebaseapp.com",
-    projectId: "gbsaadideas",
-    storageBucket: "gbsaadideas.appspot.com",
-    messagingSenderId: "874786659666",
-    appId: "1:874786659666:web:49dd4f35e2770e4da1ee8b"
-};
-
-// Initialize a separate Firebase app instance for the login page
-const loginApp = initializeApp(firebaseConfig, "loginApp");
-const auth = getAuth(loginApp);
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+// ✅ Import the shared auth instance from our new config file.
+import { auth } from './modules/firebase-config.js';
 
 const userSelectionStep = document.getElementById('user-selection-step');
 const pinEntryStep = document.getElementById('pin-entry-step');
@@ -55,9 +42,9 @@ pinForm.addEventListener('submit', async (e) => {
     const email = `${selectedUser}@adcenter.local`;
 
     try {
+        // Use the imported, shared auth instance.
         await signInWithEmailAndPassword(auth, email, pin);
-        // On successful login, Firebase automatically persists the session.
-        // Now we can safely redirect to the main app.
+        // On successful login, Firebase's session persistence will work correctly.
         window.location.href = 'index.html';
     } catch (error) {
         console.error("Login failed:", error.code);
