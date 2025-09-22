@@ -1,0 +1,933 @@
+Folder Tree:
+====================
+adcenter
+adcenter/
+    app.js
+    index.html
+    login.html
+    login.js
+    structure.py
+    style.css
+    vercel.json
+    modules/
+        dashboard.js
+        data.js
+        dom.js
+        dragDrop.js
+        firebase-config.js
+        firebase.js
+        modals.js
+        ui.js
+
+
+File Contents:
+====================
+C:\Users\shop\Desktop\adcenter\app.js
+
+// Import services and modules
+import { initializeFirebase } from './modules/firebase-services.js'; // Renamed for clarity
+import { initializeDashboard } from './modules/dashboard.js';
+import { initializeIdeaBoard } from './modules/idea-board.js'; // Renamed for clarity
+
+// --- DOM Elements ---
+const mainApp = document.getElementById('main-app');
+const appContent = document.getElementById('app-content');
+const userInfoEl = document.getElementById('user-info');
+const navList = document.getElementById('sidebar-nav');
+const loadingOverlay = document.getElementById('loading-overlay');
+
+// --- App State ---
+let currentUser = null;
+let allIdeas = []; // Central cache for all idea data
+
+// --- App Initialization ---
+async function init() {
+    // Authenticate and get user info
+    const { db, userId, appId } = await initializeFirebase();
+    if (!userId) return; // initializeFirebase handles redirect
+
+    currentUser = { db, id: userId, appId };
+    
+    // Show the main application layout
+    mainApp.classList.remove('hidden');
+
+    // Setup the real-time listener for ideas
+    // The third argument is a "callback" function that runs every time data changes
+    setupRealtimeListener(db, appId, (ideas) => {
+        allIdeas = ideas;
+        // Re-render the current view with fresh data whenever it changes
+        const currentView = window.location.hash.substring(1) || 'dashboard';
+        navigateTo(currentView); 
+    });
+
+    renderSidebar();
+    attachGlobalListeners();
+
+    // Navigate to the view specified in the URL hash, or default to dashboard
+    const initialView = window.location.hash.substring(1) || 'dashboard';
+    navigateTo(initialView);
+}
+
+// --- UI Rendering ---
+function renderSidebar() {
+    const links = [
+        { view: 'dashboard', text: 'Dashboard' },
+        { view: 'idea-board', text: 'Idea Board' },
+    ];
+    navList.innerHTML = links.map(link => `<li><a href="#${link.view}" class="nav-link" data-view="${link.view}">${link.text}</a></li>`).join('');
+}
+
+// --- View Routing ---
+function navigateTo(view) {
+    loadingOverlay.classList.remove('hidden');
+    
+    // Update URL hash
+    window.location.hash = view;
+
+    // Update active link in sidebar
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.toggle('active', link.dataset.view === view);
+    });
+    
+    // Clear previous content
+    appContent.innerHTML = '';
+    
+    // Render the new view
+    switch (view) {
+        case 'dashboard':
+            initializeDashboard({ name: currentUser.id }, appContent, allIdeas);
+            break;
+        case 'idea-board':
+            // We need to create an initializeIdeaBoard function now
+            // initializeIdeaBoard(currentUser, appContent, allIdeas);
+            appContent.innerHTML = `<h1 class="text-white">Idea Board Coming Soon!</h1>`;
+            break;
+        default:
+            appContent.innerHTML = `<h1 class="text-white">Page Not Found</h1>`;
+    }
+
+    userInfoEl.textContent = `Logged in as: ${currentUser.id}`;
+    loadingOverlay.classList.add('hidden');
+}
+
+// --- Global Event Listeners ---
+function attachGlobalListeners() {
+    // Handle sidebar navigation clicks
+    navList.addEventListener('click', (e) => {
+        const link = e.target.closest('.nav-link');
+        if (link) {
+            e.preventDefault();
+            navigateTo(link.dataset.view);
+        }
+    });
+}
+
+
+// --- Start the App ---
+init();
+
+C:\Users\shop\Desktop\adcenter\index.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdFlow Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-[var(--background-deep-space)]">
+
+    <div id="login-page" class="hidden"> </div>
+
+    <div id="main-app" class="flex h-screen overflow-hidden hidden">
+      
+        <aside class="w-64 p-5 flex flex-col flex-shrink-0">
+            <h1 class="text-2xl font-bold text-white mb-10 font-headline">AdFlow Hub</h1>
+            <nav class="flex-1">
+                <ul id="sidebar-nav" class="space-y-2">
+                    </ul>
+            </nav>
+        </aside>
+
+        <div class="flex-1 flex flex-col">
+            <header class="flex justify-end items-center p-4 shadow-md">
+                <div id="user-info" class="mx-6 text-sm text-gray-300"></div>
+                <button id="logout-btn" class="logout-button">Logout</button>
+            </header>
+
+            <main id="app-content" class="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
+                </main>
+        </div>
+    </div>
+
+    <div id="modal-container"></div>
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
+
+C:\Users\shop\Desktop\adcenter\login.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Ad Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style> body { background-color: #000; } </style>
+</head>
+<body class="flex items-center justify-center min-h-screen font-sans">
+    <div class="bg-gray-800 p-8 rounded-lg shadow-2xl text-center w-full max-w-md">
+        <h1 class="text-white text-3xl font-bold mb-2">Global Batteries</h1>
+        <h2 class="text-gray-400 text-xl mb-8">Ad Idea Center Login</h2>
+        
+        <!-- Step 1: User Selection -->
+        <div id="user-selection-step">
+            <h3 class="text-white text-lg mb-4">Who are you?</h3>
+            <div id="user-selection-grid" class="grid grid-cols-2 gap-4">
+                <button data-uid="frank" class="user-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">Frank</button>
+                <button data-uid="liam" class="user-btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">Liam</button>
+                <button data-uid="sian" class="user-btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">Sian</button>
+                <button data-uid="suli" class="user-btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">Suli</button>
+                <button data-uid="lynne" class="user-btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">Lynne</button>
+                <button data-uid="drikus" class="user-btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">Drikus</button>
+            </div>
+        </div>
+
+        <!-- Step 2: PIN Entry (hidden by default) -->
+        <div id="pin-entry-step" class="hidden">
+            <h3 class="text-white text-lg mb-4">Welcome, <span id="welcome-name" class="font-bold capitalize"></span>!</h3>
+            <p class="text-gray-400 mb-4">Please enter your 6-digit PIN.</p>
+            <form id="pin-form">
+                <input type="password" id="pin-input" maxlength="6" class="bg-gray-700 text-white text-center text-3xl tracking-[1em] w-64 mx-auto p-2 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none" required pattern="\d{6}">
+                <button type="submit" class="mt-6 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Login</button>
+                <button type="button" id="back-btn" class="mt-2 w-full text-gray-400 hover:text-white">Back</button>
+            </form>
+        </div>
+        <p id="error-message" class="text-red-400 mt-4 h-5"></p>
+
+    </div>
+    <script type="module" src="login.js"></script>
+</body>
+</html>
+
+C:\Users\shop\Desktop\adcenter\login.js
+
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+// ✅ Import the shared auth instance from our new config file.
+import { auth } from './modules/firebase-config.js';
+
+const userSelectionStep = document.getElementById('user-selection-step');
+const pinEntryStep = document.getElementById('pin-entry-step');
+const userSelectionGrid = document.getElementById('user-selection-grid');
+const pinForm = document.getElementById('pin-form');
+const welcomeName = document.getElementById('welcome-name');
+const pinInput = document.getElementById('pin-input');
+const backBtn = document.getElementById('back-btn');
+const errorMessage = document.getElementById('error-message');
+
+let selectedUser = null;
+
+// Handle user selection
+userSelectionGrid.addEventListener('click', (e) => {
+    const userButton = e.target.closest('.user-btn');
+    if (userButton) {
+        selectedUser = userButton.dataset.uid;
+        welcomeName.textContent = selectedUser;
+        userSelectionStep.classList.add('hidden');
+        pinEntryStep.classList.remove('hidden');
+        pinInput.focus();
+    }
+});
+
+// Go back to user selection
+backBtn.addEventListener('click', () => {
+    selectedUser = null;
+    pinInput.value = '';
+    errorMessage.textContent = '';
+    pinEntryStep.classList.add('hidden');
+    userSelectionStep.classList.remove('hidden');
+});
+
+// Handle PIN form submission
+pinForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorMessage.textContent = '';
+    const pin = pinInput.value;
+    const email = `${selectedUser}@adcenter.local`;
+
+    try {
+        // Use the imported, shared auth instance.
+        await signInWithEmailAndPassword(auth, email, pin);
+        // On successful login, Firebase's session persistence will work correctly.
+        window.location.href = 'index.html';
+    } catch (error) {
+        console.error("Login failed:", error.code);
+        errorMessage.textContent = "Incorrect PIN. Please try again.";
+    }
+});
+
+C:\Users\shop\Desktop\adcenter\structure.py
+
+import os
+import sys
+
+def get_file_tree(startpath, exclude_files=None):
+    """Generates a string representation of the directory tree."""
+    if exclude_files is None:
+        exclude_files = []
+    
+    tree_str = f"{os.path.basename(startpath)}\n"
+    for root, dirs, files in os.walk(startpath):
+        # Exclude common build and version control directories from the tree
+        dirs[:] = [d for d in dirs if d not in ['.git', 'dist', 'build']]
+        
+        level = root.replace(startpath, '').count(os.sep)
+        indent = ' ' * 4 * level
+        tree_str += f"{indent}{os.path.basename(root)}/\n"
+        subindent = ' ' * 4 * (level + 1)
+        for f in files:
+            if f not in exclude_files:
+                tree_str += f"{subindent}{f}\n"
+    return tree_str
+
+def get_file_contents(startpath, exclude_files=None):
+    """
+    Traverses the directory, reads the content of each file,
+    and formats it as a single string.
+    """
+    if exclude_files is None:
+        exclude_files = []
+    
+    contents_str = ""
+    # List of directories to skip
+    skip_dirs = ['.git', 'dist', 'build']
+
+    for root, dirs, files in os.walk(startpath):
+        # Modify the list of directories in place to skip certain ones
+        dirs[:] = [d for d in dirs if d not in skip_dirs]
+        
+        for f in files:
+            # Skip the file if its name is in the exclude list
+            if f in exclude_files:
+                continue
+            
+            file_path = os.path.join(root, f)
+            
+            try:
+                # Open the file and read its content using utf-8 encoding
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    content = file.read()
+                
+                # Format the output: path, followed by content
+                contents_str += f"{file_path}\n\n{content}\n\n"
+                
+            except UnicodeDecodeError:
+                # Fallback to a different encoding if utf-8 fails
+                try:
+                    with open(file_path, 'r', encoding='latin-1') as file:
+                        content = file.read()
+                    contents_str += f"{file_path}\n\n{content}\n\n"
+                except Exception as e:
+                    contents_str += f"{file_path}\n\n[Error reading file: {e}]\n\n"
+            except Exception as e:
+                # Catch any other I/O errors
+                contents_str += f"{file_path}\n\n[Error reading file: {e}]\n\n"
+    
+    return contents_str
+
+def main():
+    """Main function to generate the folder tree and file contents."""
+    # Define the target and output folder paths
+    target_folder = r"C:\Users\shop\Desktop\adcenter"
+    output_folder = r"C:\Users\shop\Desktop\adcenter"
+    output_file_name = "adcenter_structure_and_contents.txt"
+    script_file_name = "generate_adcenter_structure.py"
+    output_file_path = os.path.join(output_folder, output_file_name)
+    
+    # Files to be excluded from the output
+    excluded_files = [output_file_name, script_file_name]
+
+    # Check if the target folder exists
+    if not os.path.isdir(target_folder):
+        print(f"Error: The specified folder does not exist: {target_folder}")
+        sys.exit(1)
+
+    # Get the file tree and all file contents, excluding the output files
+    tree = get_file_tree(target_folder, excluded_files)
+    contents = get_file_contents(target_folder, excluded_files)
+
+    # Combine the outputs into a single string
+    combined_output = "Folder Tree:\n" + "="*20 + "\n" + tree + "\n\n" + "File Contents:\n" + "="*20 + "\n" + contents
+
+    # Write the combined output to a text file
+    try:
+        with open(output_file_path, "w", encoding="utf-8") as f:
+            f.write(combined_output)
+        print(f"Successfully saved the folder structure and contents to:\n{output_file_path}")
+    except Exception as e:
+        print(f"An error occurred while writing the file: {e}")
+
+if __name__ == "__main__":
+    main()
+
+C:\Users\shop\Desktop\adcenter\style.css
+
+:root {
+    --background-deep-space: #111827;
+    --background-surface: #1F2937;
+    --background-subtle: #374151;
+    --border-default: #4B5563;
+    --border-interactive: #3B82F6;
+    --text-primary: #F9FAFB;
+    --text-secondary: #9CA3AF;
+    --text-headline: #FFFFFF;
+    --brand-accent: #3B82F6;
+    --brand-accent-text: #FFFFFF;
+    --brand-accent-hover: #2563EB;
+    --feedback-success: #10B981;
+    --feedback-warning: #F59E0B;
+    --feedback-danger: #EF4444;
+    --font-headline: 'Montserrat', sans-serif;
+    --font-body: 'Roboto', sans-serif;
+    --border-radius-medium: 8px;
+    --border-radius-large: 12px;
+    --global-transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    background-color: var(--background-deep-space);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+}
+
+aside {
+    background-color: var(--background-surface);
+    border-right: 1px solid var(--border-default);
+}
+
+header {
+    background-color: var(--background-surface);
+    border-bottom: 1px solid var(--border-default);
+}
+
+.font-headline { font-family: var(--font-headline); }
+
+.nav-link {
+    display: block;
+    padding: 12px 18px;
+    border-radius: var(--border-radius-medium);
+    transition: background-color var(--global-transition), color var(--global-transition);
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    background-color: var(--background-subtle);
+    color: var(--text-primary);
+}
+
+.nav-link.active {
+    background-color: var(--brand-accent);
+    color: var(--brand-accent-text);
+    font-weight: 700;
+}
+
+.primary-button, .logout-button {
+    background-color: var(--brand-accent);
+    color: var(--brand-accent-text);
+    font-family: var(--font-headline);
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: var(--border-radius-medium);
+    transition: background-color var(--global-transition);
+    border: none;
+    cursor: pointer;
+}
+.primary-button:hover, .logout-button:hover { background-color: var(--brand-accent-hover); }
+
+.secondary-button {
+    background-color: var(--background-subtle);
+    color: var(--text-primary);
+    border: 1px solid var(--border-default);
+    padding: 10px 20px;
+    border-radius: var(--border-radius-medium);
+    transition: background-color var(--global-transition);
+    cursor: pointer;
+}
+.secondary-button:hover { background-color: #4B5563; }
+
+input, textarea, select {
+    background-color: var(--background-deep-space);
+    color: var(--text-primary);
+    border: 1px solid var(--border-default);
+    padding: 12px 16px;
+    border-radius: var(--border-radius-medium);
+    width: 100%;
+}
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--border-interactive);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+}
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(17, 24, 39, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 50;
+}
+
+.module-card {
+    background-color: var(--background-surface);
+    border: 1px solid var(--border-default);
+    border-radius: var(--border-radius-large);
+    padding: 24px;
+}
+
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(17, 24, 39, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+.spinner {
+    width: 56px;
+    height: 56px;
+    border: 6px solid var(--border-default);
+    border-bottom-color: var(--brand-accent);
+    border-radius: 50%;
+    animation: rotation 1s linear infinite;
+}
+@keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+#app-content::-webkit-scrollbar { width: 10px; }
+#app-content::-webkit-scrollbar-track { background: transparent; }
+#app-content::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 5px; border: 2px solid var(--background-deep-space); }
+#app-content::-webkit-scrollbar-thumb:hover { background: var(--brand-accent); }
+.hidden { display: none !important; }
+
+/* Styles from old project */
+.modal { transition: opacity 0.25s ease; }
+.dragging { opacity: 0.5; cursor: grabbing; }
+.drag-over { border-style: solid; border-color: #fff !important; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+C:\Users\shop\Desktop\adcenter\vercel.json
+
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/login.html"
+    }
+  ]
+}
+
+C:\Users\shop\Desktop\adcenter\modules\dashboard.js
+
+/**
+ * Renders the main dashboard view.
+ * @param {object} client - The current client context.
+ * @param {HTMLElement} container - The element to render the content into.
+ * @param {Array<object>} allIdeas - All idea documents from Firestore.
+ */
+export function initializeDashboard(client, container, allIdeas) {
+    // Calculate stats
+    const ideasPending = allIdeas.filter(idea => idea.status === 'Pending Approval').length;
+    const ideasLive = allIdeas.filter(idea => idea.status === 'Live').length;
+    const totalComments = allIdeas.reduce((sum, idea) => sum + (idea.comments?.length || 0), 0);
+
+    container.innerHTML = `
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-white mb-1 font-headline">Welcome, ${client.name}</h1>
+            <p class="text-lg text-gray-400">Here's your high-level overview of the AdFlow Hub.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="module-card text-center">
+                <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Ideas Pending Approval</p>
+                <p class="text-6xl font-bold text-white mt-2">${ideasPending}</p>
+            </div>
+            <div class="module-card text-center">
+                <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Campaigns & Ads Live</p>
+                <p class="text-6xl font-bold text-white mt-2">${ideasLive}</p>
+            </div>
+            <div class="module-card text-center">
+                <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Total Team Comments</p>
+                <p class="text-6xl font-bold text-white mt-2">${totalComments}</p>
+            </div>
+        </div>
+
+        <div class="mt-8 module-card">
+            <h2 class="text-2xl font-bold font-headline mb-4">Next Steps</h2>
+            <p class="text-gray-400">
+                Use the sidebar to navigate to the <strong>Idea Board</strong> to review, vote on, and discuss new ad concepts.
+            </p>
+        </div>
+    `;
+}
+
+C:\Users\shop\Desktop\adcenter\modules\data.js
+
+import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+/**
+ * Sets up a real-time listener on the 'ideas' collection in Firestore.
+ * When data changes, it processes the snapshot and invokes the provided callback function.
+ * @param {object} db - The Firestore database instance.
+ * @param {string} appId - The application ID for the Firestore path.
+ * @param {function} onDataChange - The callback function to execute with the updated ideas data.
+ */
+export function setupRealtimeListener(db, appId, onDataChange) {
+    const ideasCollectionRef = collection(db, `/artifacts/${appId}/public/data/ideas`);
+    
+    onSnapshot(ideasCollectionRef, (snapshot) => {
+        const ideasData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        onDataChange(ideasData);
+    });
+}
+
+C:\Users\shop\Desktop\adcenter\modules\dom.js
+
+// A central place to query and export all necessary DOM elements.
+// This prevents repetitive document.querySelector calls across different modules.
+
+export const dropZones = {
+    ideas: document.querySelector('#ideas-zone .card-container'),
+    yes: document.querySelector('#yes-zone .card-container'),
+    maybe: document.querySelector('#maybe-zone .card-container'),
+    no: document.querySelector('#no-zone .card-container'),
+    hot: document.querySelector('#hot-zone .card-container'),
+};
+
+export const addNewCardBtn = document.getElementById('add-new-card');
+export const userIdDisplay = document.getElementById('user-id-display');
+
+// Modal Elements
+export const viewModal = document.getElementById('view-modal');
+export const addModal = document.getElementById('add-modal');
+export const addIdeaForm = document.getElementById('add-idea-form');
+
+// Modal Content
+export const modalTitle = document.getElementById('modal-title');
+export const modalImage = document.getElementById('modal-image');
+export const modalTags = document.getElementById('modal-tags');
+export const modalDescription = document.getElementById('modal-description');
+
+// Modal Close Buttons
+export const closeViewModalBtn = document.getElementById('close-view-modal');
+export const closeAddModalBtn = document.getElementById('close-add-modal');
+
+C:\Users\shop\Desktop\adcenter\modules\dragDrop.js
+
+import { doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+let draggedItem = null;
+
+/**
+ * Initializes all event listeners for drag and drop functionality.
+ * @param {object} db - The Firestore database instance.
+ * @param {string} userId - The current user's ID.
+ * @param {string} appId - The application ID.
+ */
+export function initializeDragAndDrop(db, userId, appId) {
+    document.addEventListener('dragstart', (e) => {
+        if (e.target.classList.contains('idea-card')) {
+            draggedItem = e.target;
+            setTimeout(() => e.target.classList.add('dragging'), 0);
+        }
+    });
+
+    document.addEventListener('dragend', () => {
+        if (draggedItem) {
+            draggedItem.classList.remove('dragging');
+            draggedItem = null;
+        }
+    });
+
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        zone.addEventListener('dragover', e => { 
+            e.preventDefault(); 
+            e.currentTarget.classList.add('drag-over'); 
+        });
+        zone.addEventListener('dragleave', e => e.currentTarget.classList.remove('drag-over'));
+        zone.addEventListener('drop', (e) => handleDrop(e, db, userId, appId));
+    });
+}
+
+/**
+ * Handles the logic when a card is dropped into a zone.
+ * It updates the user's vote in Firestore.
+ * @param {Event} e - The drop event.
+ * @param {object} db - The Firestore database instance.
+ * @param {string} userId - The current user's ID.
+ * @param {string} appId - The application ID.
+ */
+async function handleDrop(e, db, userId, appId) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    if (!draggedItem || !userId) return;
+
+    const ideaId = draggedItem.dataset.id;
+    const vote = e.currentTarget.id.replace('-zone', ''); // 'yes', 'no', 'maybe', 'ideas'
+    
+    const ideaRef = doc(db, `/artifacts/${appId}/public/data/ideas/${ideaId}`);
+    const voteKey = `votes.${userId}`;
+
+    try {
+        if (vote === 'ideas') {
+            // "Moving back to ideas" means removing the vote by setting it to null
+            await updateDoc(ideaRef, { [voteKey]: null });
+        } else {
+            await updateDoc(ideaRef, { [voteKey]: vote });
+        }
+    } catch (error) {
+        // This handles the case where the 'votes' map doesn't exist yet for the document
+        if (error.code === 'not-found' || error.message.includes('No document to update')) {
+             await setDoc(ideaRef, { votes: { [userId]: vote } }, { merge: true });
+        } else {
+            console.error("Failed to update vote:", error);
+        }
+    }
+}
+
+C:\Users\shop\Desktop\adcenter\modules\firebase-config.js
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+// This is now the SINGLE source of truth for your Firebase configuration.
+const firebaseConfig = {
+    apiKey: "AIzaSyA7dhSMDcW0i319awDLxWP9oFV5ti4J2fU",
+    authDomain: "gbsaadideas.firebaseapp.com",
+    projectId: "gbsaadideas",
+    storageBucket: "gbsaadideas.appspot.com",
+    messagingSenderId: "874786659666",
+    appId: "1:874786659666:web:49dd4f35e2770e4da1ee8b"
+};
+
+// Initialize Firebase ONCE and export the core services for other modules to use.
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
+export const auth = getAuth(app);
+
+C:\Users\shop\Desktop\adcenter\modules\firebase.js
+
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+// ✅ Import the shared auth and db instances from our new config file.
+import { auth, db } from './firebase-config.js';
+
+// Handle logout functionality. This needs to be in a main module.
+document.addEventListener('DOMContentLoaded', () => {
+    const logoutBtn = document.getElementById('logout-btn');
+    if(logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth).catch(error => console.error("Sign out error", error));
+            // The onAuthStateChanged listener below will automatically redirect to login.
+        });
+    }
+});
+
+/**
+ * Checks the user's current authentication state using the shared auth instance.
+ * @returns {Promise<object>} A promise that resolves with db, auth, userId, and appId if logged in.
+ */
+export function initializeFirebase() {
+    return new Promise((resolve) => {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User IS signed in. The session was correctly found.
+                const email = user.email;
+                const userId = email.split('@')[0];
+                const appId = 'global-batteries-ad-center';
+                resolve({ db, auth, userId, appId });
+            } else {
+                // User is NOT signed in.
+                console.log("No active Firebase session. Redirecting to login.");
+                window.location.href = 'login.html';
+                // We do not resolve, preventing the main app from loading without a user.
+            }
+        });
+    });
+}
+
+C:\Users\shop\Desktop\adcenter\modules\modals.js
+
+import { collection, addDoc, doc, getDoc, updateDoc, arrayUnion, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { viewModal, addModal, addIdeaForm, modalTitle, modalImage, modalTags, modalDescription, closeViewModalBtn, closeAddModalBtn } from './dom.js';
+
+let draggedItem = null;
+let currentIdeaId = null;
+
+document.addEventListener('dragstart', () => draggedItem = true);
+document.addEventListener('dragend', () => setTimeout(() => draggedItem = false, 50));
+
+export function initializeModals(db, userId, appId) {
+    const commentForm = document.getElementById('comment-form');
+
+    document.addEventListener('click', async (e) => {
+        if (draggedItem) return;
+        if (e.target.closest('#add-new-card')) {
+            openAddModal();
+        } else if (e.target.closest('.idea-card')) {
+            const card = e.target.closest('.idea-card');
+            currentIdeaId = card.dataset.id;
+            await openViewModal(currentIdeaId, db, appId, userId);
+        } else if (e.target.id === 'mark-posted-btn') {
+            if (currentIdeaId) {
+                const ideaRef = doc(db, `/artifacts/${appId}/public/data/ideas/${currentIdeaId}`);
+                await updateDoc(ideaRef, { status: 'Live' });
+                closeModals();
+            }
+        }
+    });
+    
+    addIdeaForm.addEventListener('submit', (e) => handleAddIdea(e, db, appId, userId));
+    commentForm.addEventListener('submit', (e) => handleAddComment(e, db, userId, appId));
+    
+    closeViewModalBtn.addEventListener('click', closeModals);
+    closeAddModalBtn.addEventListener('click', closeModals);
+    viewModal.querySelector('.modal-backdrop').addEventListener('click', closeModals);
+    addModal.querySelector('.modal-backdrop').addEventListener('click', closeModals);
+}
+
+async function handleAddComment(e, db, userId, appId) {
+    e.preventDefault();
+    if (!currentIdeaId || !userId) return;
+
+    const commentInput = document.getElementById('comment-input');
+    const commentText = commentInput.value.trim();
+    if (commentText === '') return;
+
+    const ideaRef = doc(db, `/artifacts/${appId}/public/data/ideas/${currentIdeaId}`);
+    const newComment = { userId: userId, text: commentText, timestamp: serverTimestamp() };
+
+    try {
+        await updateDoc(ideaRef, { comments: arrayUnion(newComment) });
+        commentInput.value = '';
+        const updatedDoc = await getDoc(ideaRef);
+        renderComments(updatedDoc.data().comments || []);
+    } catch (error) {
+        console.error("Error adding comment: ", error);
+        // ✅ THIS IS THE CRITICAL FIX: Show an alert if something goes wrong.
+        alert(`Could not post comment. Please check your Firestore Security Rules and ensure you have read/write permissions. Error: ${error.message}`);
+    }
+}
+
+// ... (The rest of the file remains the same) ...
+async function handleAddIdea(e, db, appId, userId) {
+    e.preventDefault();
+    if (userId !== 'frank') return;
+    const newIdea = {
+        title: document.getElementById('title').value,
+        imageUrl: document.getElementById('image-url').value,
+        description: document.getElementById('description').value,
+        type: document.getElementById('idea-type').value,
+        status: 'Pending Approval',
+        author: 'frank',
+        createdAt: serverTimestamp(),
+        votes: {},
+        comments: [],
+        metrics: []
+    };
+    try {
+        const ideasCollectionRef = collection(db, `/artifacts/${appId}/public/data/ideas`);
+        await addDoc(ideasCollectionRef, newIdea);
+        addIdeaForm.reset();
+        closeModals();
+    } catch (error) { console.error("Error adding document: ", error); }
+}
+
+async function openViewModal(ideaId, db, appId, userId) {
+    const ideaRef = doc(db, `/artifacts/${appId}/public/data/ideas/${ideaId}`);
+    const docSnap = await getDoc(ideaRef);
+    if (!docSnap.exists()) { console.error("Idea not found!"); return; }
+    const ideaData = docSnap.data();
+    modalTitle.textContent = ideaData.title;
+    modalImage.src = ideaData.imageUrl || 'https://placehold.co/600x400/1a202c/ffffff?text=No+Image';
+    modalDescription.textContent = ideaData.description;
+    modalTags.innerHTML = `<span class="text-xs font-bold bg-blue-900 text-blue-300 px-2 py-1 rounded-full">${ideaData.type}</span><span class="text-xs font-bold bg-gray-700 text-gray-300 px-2 py-1 rounded-full">${ideaData.status}</span>`;
+    const metricsSection = document.getElementById('metrics-section');
+    if (ideaData.status === 'Live') {
+        metricsSection.innerHTML = `<hr class="border-gray-600 my-4"><h3 class="text-xl font-bold mb-4">Performance Metrics</h3><p class="text-gray-400 text-sm">Metrics tracking will be added here soon.</p><button class="mt-4 secondary-button w-full">Add Daily Report</button>`;
+        metricsSection.classList.remove('hidden');
+    } else {
+        metricsSection.innerHTML = '';
+        metricsSection.classList.add('hidden');
+    }
+    const modalFooter = document.getElementById('view-modal-footer');
+    const userVote = ideaData.votes?.[userId];
+    if (userId === 'frank' && userVote === 'yes' && ideaData.status === 'Pending Approval') {
+        modalFooter.innerHTML = `<button id="mark-posted-btn" class="primary-button w-full bg-green-600 hover:bg-green-700">Mark as Posted & Live</button>`;
+    } else {
+        modalFooter.innerHTML = '';
+    }
+    renderComments(ideaData.comments || []);
+    viewModal.classList.remove('hidden');
+}
+
+function renderComments(comments) {
+    const commentsList = document.getElementById('comments-list');
+    commentsList.innerHTML = '';
+    if (comments.length === 0) {
+        commentsList.innerHTML = `<p class="text-gray-400">No recommendations yet.</p>`;
+        return;
+    }
+    comments.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+    comments.forEach(comment => {
+        const commentEl = document.createElement('div');
+        commentEl.className = 'bg-gray-700 p-3 rounded-lg';
+        const date = comment.timestamp ? new Date(comment.timestamp.seconds * 1000).toLocaleString() : 'Just now';
+        commentEl.innerHTML = `<p class="text-white">${comment.text}</p><p class="text-xs text-gray-400 mt-2"><strong class="font-bold capitalize">${comment.userId}</strong> - ${date}</p>`;
+        commentsList.appendChild(commentEl);
+    });
+}
+
+function openAddModal() { addModal.classList.remove('hidden'); }
+function closeModals() { viewModal.classList.add('hidden'); addModal.classList.add('hidden'); currentIdeaId = null; }
+
+C:\Users\shop\Desktop\adcenter\modules\ui.js
+
+// Inside the createIdeaCard function...
+function createIdeaCard(ideaData, isHotCard) {
+    // ... (keep the existing variable declarations) ...
+    const { id, title, imageUrl, type, status, description, yesVotes } = ideaData;
+
+    // ... (keep the card creation and dataset lines) ...
+    
+    // ✅ UPDATED TAGS/METADATA section
+    const metadataHTML = isHotCard 
+        ? `<div class="absolute top-2 right-2 bg-purple-600 text-white text-sm font-bold rounded-full h-8 w-8 flex items-center justify-center">${yesVotes}</div>`
+        : `<div class="pointer-events-none">
+               <span class="text-xs font-bold bg-blue-900 text-blue-300 px-2 py-1 rounded-full">${type || 'Idea'}</span>
+               <span class="text-xs font-bold bg-gray-700 text-gray-300 px-2 py-1 rounded-full">${status || 'New'}</span>
+           </div>`;
+
+    card.innerHTML = `
+        <div class="relative">
+            <img src="${imageUrl || 'https://placehold.co/600x400/1a202c/ffffff?text=Idea'}" alt="${title}" class="rounded-md w-full aspect-[4/3] object-cover pointer-events-none">
+            ${isHotCard ? metadataHTML : ''}
+        </div>
+        ${!isHotCard ? metadataHTML : ''}
+        <h3 class="font-bold text-white pointer-events-none mt-2">${title}</h3>
+    `;
+    return card;
+}
+
