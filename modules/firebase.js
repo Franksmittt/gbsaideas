@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
 export function initializeFirebase() {
     return new Promise((resolve) => {
         // onAuthStateChanged is the official Firebase listener for login status.
-        // It runs automatically when the page loads.
+        // It runs automatically when the page loads and when the auth state changes.
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 // User IS signed in.
@@ -51,6 +51,7 @@ export function initializeFirebase() {
                 // User is NOT signed in.
                 console.log("No active Firebase session. Redirecting to login.");
                 window.location.href = 'login.html';
+                // We do not resolve the promise here, preventing the main app from loading.
             }
         });
     });
